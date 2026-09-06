@@ -1,0 +1,34 @@
+name: Obfuscate Worker
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  obfuscate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install obfuscator
+        run: npm install -g javascript-obfuscator
+
+      - name: Obfuscate into new file
+        run: |
+          javascript-obfuscator worker.js --output worker.obfuscated.js --compact true --identifier-names-generator hexadecimal --string-array true --string-array-encoding none --control-flow-flattening false --dead-code-injection false --self-defending false --debug-protection false
+
+      - name: Commit obfuscated file
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add worker.obfuscated.js
+          git commit -m "Auto-generate obfuscated worker" || echo "Nothing to commit"
+          git push
