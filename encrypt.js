@@ -4,7 +4,9 @@ const fs = require('fs');
 const key = crypto.randomBytes(32);
 const iv = crypto.randomBytes(16);
 
-const source = fs.readFileSync('worker.js', 'utf8');
+let source = fs.readFileSync('worker.js', 'utf8');
+source = source.replace(/export\s+default\s+/, 'module.exports.default = ');
+
 const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
 let encrypted = cipher.update(source, 'utf8', 'base64');
 encrypted += cipher.final('base64');
@@ -21,7 +23,7 @@ async function __load() {
   const module = { exports: {} };
   const fn = new Function("module", "exports", code);
   fn(module, module.exports);
-  return module.exports.default || module.exports;
+  return module.exports.default;
 }
 function __getHandler() {
   if (!__handlerPromise) __handlerPromise = __load();
