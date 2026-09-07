@@ -32,11 +32,11 @@ function __getHandler() {
 
 export default {
   async fetch(request, env, ctx) {
-    const handler = await __getHandler();
-    return handler.fetch(request, env, ctx);
+    try {
+      const handler = await __getHandler();
+      return handler.fetch(request, env, ctx);
+    } catch (e) {
+      return new Response("DEBUG ERROR: " + e.stack, { status: 500 });
+    }
   }
 };
-`;
-
-fs.writeFileSync('worker.encrypted.js', loader);
-console.log('Encrypted successfully.');
